@@ -3,7 +3,7 @@ import { useContactStore } from "@store/contactStore";
 import { watch, reactive } from "vue";
 const store = useContactStore();
 
-const emit = defineEmits(["onSubmitForm"]);
+const emit = defineEmits(["onSubmitAddForm", "onSubmitEditForm"]);
 
 const props = defineProps({
   contact: {
@@ -11,14 +11,14 @@ const props = defineProps({
     default: null,
     type: Object,
   },
-  edit: {
-    require: false,
-    default: false,
-    type: Boolean,
+  mode: {
+    require: true,
+    default: null,
+    type: String,
   },
 });
 
-if (props.edit && props.contact) {
+if (props.mode === "edit" && props.contact) {
   store.contactForm = props.contact;
 }
 
@@ -68,12 +68,17 @@ watch(
   },
   { deep: true }
 );
-const isSubmit = false
+// const isSubmit = false
 const onSubmit = () => {
       validate();
     if (!errors.name && !errors.number && !errors.email) {
-        emit("onSubmitForm");
-        isSubmit = false;
+      if(props.mode === "edit"){
+        console.log("onSubmitEditForm")
+        emit("onSubmitEditForm");
+      }else{
+        console.log("onSubmitAddForm")
+        emit("onSubmitAddForm");
+      }
       }
 };
 
@@ -81,7 +86,7 @@ const onSubmit = () => {
 </script>
 
 <template>
-  <form>
+  <form @submit.prevent="onSubmit">
     <div class="mb-3">
       <label for="name" class="form-label">Name</label>
       <input
@@ -120,17 +125,9 @@ const onSubmit = () => {
     <div class="mt-5 d-flex justify-content-end">
       <CustomBtn
         custom-class="btn btn-primary"
-        :title="edit ? 'Save' : 'Submit'"
-        isLink
-        route="/contact"
+        :title="mode === 'edit' ? 'Save' : 'Submit'"
         icon="fas fa-paper-plane"
-        @click="onSubmit"
       />
-       <!--<CustomBtn
-        custom-class="btn btn-primary"
-        :title="edit ? 'Save' : 'Submit'"
-        icon="fas fa-paper-plane"
-      /> -->
     </div>
   </form>
 </template>
